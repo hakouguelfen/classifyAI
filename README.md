@@ -1,3 +1,25 @@
+### Installation
+
+create virtual enviroment
+```python3
+python3 -m venv env
+```
+
+activate virtual enviroment
+```python3
+source env/bin/activate
+```
+
+install requirement packages
+```python3
+pip install -r requirements.txt
+```
+
+start the app
+```python3
+python main.py
+```
+
 ### TODO:
 -  check if there is outliers for report, plot them
 ### NOTES:
