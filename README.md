@@ -1,22 +1,22 @@
 ### Installation
 
 create virtual enviroment
-```python3
+```bash
 python3 -m venv env
 ```
 
 activate virtual enviroment
-```python3
+```bash
 source env/bin/activate
 ```
 
 install requirement packages
-```python3
+```bash
 pip install -r requirements.txt
 ```
 
 start the app
-```python3
+```bash
 python main.py
 ```
 
