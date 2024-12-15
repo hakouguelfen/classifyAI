@@ -1,13 +1,12 @@
 import pandas as pd
+import numpy as np
 from scipy.io import arff
 
 from sklearn.preprocessing import (
     StandardScaler,
-    MinMaxScaler,
+    RobustScaler,
     LabelEncoder,
-    PowerTransformer,
 )
-from classifyAI.config.enums import NORMALISATIONS
 
 
 class PreProcessing:
@@ -24,22 +23,17 @@ class PreProcessing:
         le = LabelEncoder()
         self.df["class"] = le.fit_transform(self.df["class"])
 
-    def scale_features(self, scale_method):
-        match scale_method:
-            case NORMALISATIONS.Z_SCORE.value:
-                scaler = StandardScaler()
-            case NORMALISATIONS.MIN_MAX.value:
-                scaler = MinMaxScaler()
-            case NORMALISATIONS.POWER.value:
-                scaler = PowerTransformer()
+    def scale_features(self):
+        std_scaler = StandardScaler()
+        robust_scaler = RobustScaler()
 
-            case _:
-                scaler = StandardScaler()
+        self.df_scaled = self.df.copy()
 
-        X = self.df.drop("class", axis=1)
-        y = self.df["class"]
+        for var in ["insu", "pedi"]:
+            self.df_scaled[var] = np.log1p(self.df[var])
 
-        self.df_scaled = pd.DataFrame(
-            scaler.fit_transform(X), columns=X.columns, index=self.df.index
-        )
-        self.df_scaled["class"] = y
+        normal_vars = ["plas", "pres"]
+        self.df_scaled[normal_vars] = std_scaler.fit_transform(self.df[normal_vars])
+
+        robust_vars = ["preg", "skin", "mass", "age"]
+        self.df_scaled[robust_vars] = robust_scaler.fit_transform(self.df[robust_vars])

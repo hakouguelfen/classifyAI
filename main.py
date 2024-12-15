@@ -17,11 +17,13 @@ class Encryptor:
         self.root.resizable(False, False)
         self.root.maxsize(1080, 720)
 
+        self.model_predictions = None
         self.current_normalisation = tk.StringVar()
         self.current_missing_val = tk.StringVar()
         self.current_algorithm = tk.StringVar()
         self.current_dataset = tk.StringVar()
         self.test_entry = tk.StringVar()
+        self.predict_entry = tk.StringVar()
         self.measures = {}
 
         self.build()
@@ -65,15 +67,31 @@ class Encryptor:
             col=1,
         )
 
+        # test method
+        test_button = ttk.Button(
+            config_frame, text="Test model", command=self.test_model
+        )
+        test_button.grid(row=4, column=1, padx=10, pady=10, sticky=tk.EW)
+
+        separator = ttk.Separator(config_frame, orient="horizontal")
+        separator.grid(row=5, column=0, columnspan=2, sticky="ew", padx=10, pady=10)
+
     def build_second_row(self):
         config_frame = ttk.Frame(self.input_frame)
         config_frame.grid(row=1, column=0, sticky=tk.NSEW)
 
+        # data input to predict
+        ttk.Label(config_frame, text="dataset").grid(
+            row=1, column=0, padx=10, sticky=tk.SW
+        )
+        key_entry = ttk.Entry(config_frame, textvariable=self.predict_entry, width=30)
+        key_entry.grid(row=2, column=0, padx=10, pady=10)
+
         # test method
         test_button = ttk.Button(
-            config_frame, text="Test model", command=self.test_model, width=50
+            config_frame, text="Classify data", command=self.predict
         )
-        test_button.grid(row=1, column=1, padx=10, pady=10, columnspan=2, sticky=tk.EW)
+        test_button.grid(row=3, column=1, padx=10, pady=10, sticky=tk.EW)
 
     def build_output_frame(self):
         config_frame = ttk.Frame(self.output_frame)
@@ -107,23 +125,44 @@ class Encryptor:
         pre_processing = PreProcessing()
         pre_processing.load_file(self.current_dataset.get())
         pre_processing.transform_into_numeric_value()
-        pre_processing.scale_features(self.current_normalisation.get())
+        pre_processing.scale_features()
 
         # Predictions phase
-        model_predictions = ModelPredictions(pre_processing.df_scaled)
-        model_predictions.split_dataset(int(self.test_entry.get()) / 100)
+        self.model_predictions = ModelPredictions(pre_processing.df_scaled)
+        self.model_predictions.split_dataset(int(self.test_entry.get()) / 100)
 
         match self.current_algorithm.get():
             case ALGORITHMS.KNN.value:
-                self.measures = model_predictions.knn()
+                self.measures = self.model_predictions.k_neighbors()
             case ALGORITHMS.NAIVE_BAYES.value:
-                self.measures = model_predictions.naive_bayes()
+                self.measures = self.model_predictions.naive_bayes()
             case ALGORITHMS.DECISION_TREE.value:
-                self.measures = model_predictions.decision_tree()
+                self.measures = self.model_predictions.decision_tree()
 
         self.performance_msg.delete("1.0", "end")
         for k, v in self.measures.items():
             self.performance_msg.insert("1.0", f"{k}: {v}\n")
+
+    def predict(self):
+        if self.model_predictions is None:
+            self.test_model()
+
+        msg = self.predict_entry.get()
+        sample = list(map(lambda x: float(x), msg.split(",")))
+
+        match self.current_algorithm.get():
+            case ALGORITHMS.KNN.value:
+                self.prediction = self.model_predictions.knn_predict(sample)
+            case ALGORITHMS.NAIVE_BAYES.value:
+                self.prediction = self.model_predictions.naive_bayes_predict(sample)
+            case ALGORITHMS.DECISION_TREE.value:
+                self.prediction = self.model_predictions.decision_tree_predict(sample)
+
+        self.prediction_msg.delete("1.0", "end")
+        if self.prediction[0] == 1:
+            self.prediction_msg.insert("1.0", "class: tested_positive\n")
+        else:
+            self.prediction_msg.insert("1.0", "class: tested_negative\n")
 
 
 if __name__ == "__main__":

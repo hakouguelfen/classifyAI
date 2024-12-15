@@ -26,6 +26,8 @@ python main.py
 - there are alot of outliers in insu attribute (374)
 - use log transformation
 - don't use fill missing values, because they are not missing, they are 0
-- good for KNN:{'rand': 121, 'k': 91, 'precision': 0.94} 
-- Naive bayesian: {'rand': 452, 'precision': 0.85}
+- good for KNN:   {'rand':  121, 'precision': 0.94, 'k': 91} 
+- Naive bayesian: {'rand':  452, 'precision': 0.85}
+- Decision tree:  {'rand': 1409, 'precision': 0.76}
+
 

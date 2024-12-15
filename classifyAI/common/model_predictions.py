@@ -3,9 +3,14 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 
+import pandas as pd
+
 
 class ModelPredictions:
     def __init__(self, df_scaled) -> None:
+        self.knn = None
+        self.gaussianNB = None
+        self.decision_tree_classifier = None
         self.df_scaled = df_scaled
         self.X_train = []
         self.y_train = []
@@ -54,28 +59,52 @@ class ModelPredictions:
             "FN": FN,
         }
 
-    def knn(self):
+    def knn_predict(self, sample):
+        sample_df = pd.DataFrame([sample], columns=self.df_scaled.columns.drop("class"))
+
+        if self.knn is None:
+            self.k_neighbors()
+
+        return self.knn.predict(sample_df)
+
+    def naive_bayes_predict(self, sample):
+        sample_df = pd.DataFrame([sample], columns=self.df_scaled.columns.drop("class"))
+
+        if self.gaussianNB is None:
+            self.naive_bayes()
+
+        return self.gaussianNB.predict(sample_df)
+
+    def decision_tree_predict(self, sample):
+        sample_df = pd.DataFrame([sample], columns=self.df_scaled.columns.drop("class"))
+
+        if self.decision_tree_classifier is None:
+            self.decision_tree()
+
+        return self.decision_tree_classifier.predict(sample_df)
+
+    def k_neighbors(self):
         k = 91
 
-        knn = KNeighborsClassifier(n_neighbors=k)
-        knn.fit(self.X_train, self.y_train)
-        predictions = knn.predict(self.X_test)
+        self.knn = KNeighborsClassifier(n_neighbors=k)
+        self.knn.fit(self.X_train, self.y_train)
+        predictions = self.knn.predict(self.X_test)
 
         measures = self.calculate_measures(predictions)
         return measures
 
     def naive_bayes(self):
-        model = GaussianNB()
-        model.fit(self.X_train, self.y_train)
-        predictions = model.predict(self.X_test)
+        self.gaussianNB = GaussianNB()
+        self.gaussianNB.fit(self.X_train, self.y_train)
+        predictions = self.gaussianNB.predict(self.X_test)
 
         measures = self.calculate_measures(predictions)
         return measures
 
     def decision_tree(self):
-        clf = DecisionTreeClassifier(criterion="gini", random_state=20)
-        clf.fit(self.X_train, self.y_train)
-        predictions = clf.predict(self.X_test)
+        self.decision_tree_classifier = DecisionTreeClassifier(random_state=394)
+        self.decision_tree_classifier.fit(self.X_train, self.y_train)
+        predictions = self.decision_tree_classifier.predict(self.X_test)
 
         measures = self.calculate_measures(predictions)
         return measures
