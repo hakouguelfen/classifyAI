@@ -37,3 +37,22 @@ class PreProcessing:
 
         robust_vars = ["preg", "skin", "mass", "age"]
         self.df_scaled[robust_vars] = robust_scaler.fit_transform(self.df[robust_vars])
+
+    def scale_sample(self, sample=None):
+        std_scaler = StandardScaler()
+        robust_scaler = RobustScaler()
+
+        sample_df = pd.DataFrame([sample], columns=self.df_scaled.columns.drop("class"))
+        print(sample_df)
+
+        for var in ["insu", "pedi"]:
+            sample_df[var] = np.log1p(sample_df[var])
+
+        normal_vars = ["plas", "pres"]
+        sample_df[normal_vars] = std_scaler.fit_transform(sample_df[normal_vars])
+
+        robust_vars = ["preg", "skin", "mass", "age"]
+        sample_df[robust_vars] = robust_scaler.fit_transform(sample_df[robust_vars])
+
+        print(sample_df)
+        return sample_df

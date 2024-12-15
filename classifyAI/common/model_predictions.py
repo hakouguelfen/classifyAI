@@ -17,11 +17,9 @@ class ModelPredictions:
         self.X_test = []
         self.y_test = []
 
-    def split_dataset(self, test_size):
+    def split_dataset(self, test_size, random_state):
         X = self.df_scaled.drop("class", axis=1)  # All columns except 'class'
         y = self.df_scaled["class"]
-
-        random_state = 121
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X,
@@ -60,28 +58,22 @@ class ModelPredictions:
         }
 
     def knn_predict(self, sample):
-        sample_df = pd.DataFrame([sample], columns=self.df_scaled.columns.drop("class"))
-
         if self.knn is None:
             self.k_neighbors()
 
-        return self.knn.predict(sample_df)
+        return self.knn.predict(sample)
 
     def naive_bayes_predict(self, sample):
-        sample_df = pd.DataFrame([sample], columns=self.df_scaled.columns.drop("class"))
-
         if self.gaussianNB is None:
             self.naive_bayes()
 
-        return self.gaussianNB.predict(sample_df)
+        return self.gaussianNB.predict(sample)
 
     def decision_tree_predict(self, sample):
-        sample_df = pd.DataFrame([sample], columns=self.df_scaled.columns.drop("class"))
-
         if self.decision_tree_classifier is None:
             self.decision_tree()
 
-        return self.decision_tree_classifier.predict(sample_df)
+        return self.decision_tree_classifier.predict(sample)
 
     def k_neighbors(self):
         k = 91
@@ -102,7 +94,10 @@ class ModelPredictions:
         return measures
 
     def decision_tree(self):
-        self.decision_tree_classifier = DecisionTreeClassifier(random_state=394)
+        self.decision_tree_classifier = DecisionTreeClassifier(
+            max_depth=5, max_features="sqrt", min_samples_leaf=4, random_state=147
+        )
+
         self.decision_tree_classifier.fit(self.X_train, self.y_train)
         predictions = self.decision_tree_classifier.predict(self.X_test)
 
