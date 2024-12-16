@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.io import arff
+import joblib
 
 from sklearn.preprocessing import (
     StandardScaler,
@@ -38,21 +39,24 @@ class PreProcessing:
         robust_vars = ["preg", "skin", "mass", "age"]
         self.df_scaled[robust_vars] = robust_scaler.fit_transform(self.df[robust_vars])
 
+        joblib.dump(std_scaler, "scalers/std_scaler.pkl")
+        joblib.dump(robust_scaler, "scalers/robust_scaler.pkl")
+
     def scale_sample(self, sample=None):
-        std_scaler = StandardScaler()
-        robust_scaler = RobustScaler()
+        std_scaler = joblib.load("scalers/std_scaler.pkl")
+        robust_scaler = joblib.load("scalers/robust_scaler.pkl")
 
         sample_df = pd.DataFrame([sample], columns=self.df_scaled.columns.drop("class"))
-        print(sample_df)
 
-        for var in ["insu", "pedi"]:
-            sample_df[var] = np.log1p(sample_df[var])
+        # Log scaling
+        sample_df["insu"] = np.log1p(sample_df["insu"])
+        sample_df["pedi"] = np.log1p(sample_df["pedi"])
 
+        # Apply saved scalers
         normal_vars = ["plas", "pres"]
-        sample_df[normal_vars] = std_scaler.fit_transform(sample_df[normal_vars])
+        sample_df[normal_vars] = std_scaler.transform(sample_df[normal_vars])
 
         robust_vars = ["preg", "skin", "mass", "age"]
-        sample_df[robust_vars] = robust_scaler.fit_transform(sample_df[robust_vars])
+        sample_df[robust_vars] = robust_scaler.transform(sample_df[robust_vars])
 
-        print(sample_df)
         return sample_df

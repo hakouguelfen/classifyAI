@@ -60,3 +60,7 @@ python main.py
 - min_samples_leaf: 4 |
 - max_depth: 5        |
 - using these parameters gave the best percision: 91%
+
+
+### SVM, Neural network
+- random_state: 22

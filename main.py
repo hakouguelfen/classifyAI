@@ -46,6 +46,8 @@ class Encryptor:
                 ALGORITHMS.KNN.value,
                 ALGORITHMS.NAIVE_BAYES.value,
                 ALGORITHMS.DECISION_TREE.value,
+                ALGORITHMS.NEURAL_NETWORK.value,
+                ALGORITHMS.SVM.value,
             ),
             col=1,
         )
@@ -134,12 +136,14 @@ class Encryptor:
         match self.current_algorithm.get():
             case ALGORITHMS.KNN.value:
                 self.measures = self.model_predictions.k_neighbors()
-
             case ALGORITHMS.NAIVE_BAYES.value:
                 self.measures = self.model_predictions.naive_bayes()
-
             case ALGORITHMS.DECISION_TREE.value:
                 self.measures = self.model_predictions.decision_tree()
+            case ALGORITHMS.NEURAL_NETWORK.value:
+                self.measures = self.model_predictions.neural_network()
+            case ALGORITHMS.SVM.value:
+                self.measures = self.model_predictions.svm()
 
         self.performance_msg.delete("1.0", "end")
         for k, v in self.measures.items():
@@ -151,7 +155,6 @@ class Encryptor:
 
         msg = self.predict_entry.get()
         sample = list(map(lambda x: float(x), msg.split(",")))
-
         sample_df = self.pre_processing.scale_sample(sample)
 
         match self.current_algorithm.get():
@@ -163,6 +166,10 @@ class Encryptor:
                 self.prediction = self.model_predictions.decision_tree_predict(
                     sample_df
                 )
+            case ALGORITHMS.NEURAL_NETWORK.value:
+                self.measures = self.model_predictions.neural_network_predict(sample_df)
+            case ALGORITHMS.SVM.value:
+                self.prediction = self.model_predictions.svm_predict(sample_df)
 
         self.prediction_msg.delete("1.0", "end")
         if self.prediction[0] == 1:
